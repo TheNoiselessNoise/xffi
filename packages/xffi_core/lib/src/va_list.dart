@@ -316,7 +316,8 @@ final class XVaList {
     .linuxArm64 || .androidArm64 || .fuchsiaArm64 => 32,
 
     // va_list is a plain pointer (or 1-pointer struct passed by value): pass through
-    .macosArm64e || .macosArm64 || .iosArm64e || .iosArm64 || .iosArm ||
+    // .iosArm64e || .macosArm64e ||
+    .macosArm64 || .iosArm64 || .iosArm ||
     .windowsX64 || .windowsArm64 || .windowsIA32 ||
     .linuxIA32 || .linuxArm || .linuxRiscv32 || .linuxRiscv64 ||
     .androidIA32 || .androidArm || .androidRiscv64 ||
@@ -360,7 +361,8 @@ final class XVaList {
     .androidArm64 || .fuchsiaArm64 || .linuxArm64 => .aarch64Lp64,
 
     // Microsoft / Apple pointer-based ABIs
-    .windowsX64 || .windowsArm64 || .macosArm64 || .macosArm64e || .iosArm64 || .iosArm64e => .slot8,
+    // .iosArm64e || .macosArm64e ||
+    .windowsX64 || .windowsArm64 || .macosArm64 || .iosArm64 => .slot8,
 
     // WASM
     .web => .wasm32,

@@ -41,7 +41,7 @@ enum MemoryPlatformTarget {
   /// iosArm64
   iosArm64,
   /// iosArm64e
-  iosArm64e,
+  // iosArm64e,
   /// iosX64
   iosX64,
   /// linuxArm
@@ -59,7 +59,7 @@ enum MemoryPlatformTarget {
   /// macosArm64
   macosArm64,
   /// macosArm64e
-  macosArm64e,
+  // macosArm64e,
   /// macosX64
   macosX64,
   /// windowsArm64
