@@ -1,0 +1,13 @@
+name: xffi_web_vanilla
+description: Vanilla WebAssembly backend for xffi.
+version: 1.0.0
+repository: https://github.com/TheNoiselessNoise/xffi
+
+environment:
+  sdk: ^3.12.0
+
+resolution: workspace
+
+dependencies:
+  xffi_core: ^1.0.0
+  xffi_web: ^1.0.0

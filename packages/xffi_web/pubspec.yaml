@@ -1,0 +1,12 @@
+name: xffi_web
+description: Web implementation of xffi's XPtr using WebAssembly.
+version: 1.0.0
+repository: https://github.com/TheNoiselessNoise/xffi
+
+environment:
+  sdk: ^3.12.0
+
+resolution: workspace
+
+dependencies:
+  xffi_core: ^1.0.0

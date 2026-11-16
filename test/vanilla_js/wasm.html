@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script type="module">
+  globalThis.tryCall = (f, args) => {
+    try { return { ok: true, value: f(...args) }; }
+    catch (e) { return { ok: false, error: String(e) }; }
+  };
+  const wasi_snapshot_preview1 = {
+    // (id: i32, precision: i64, out: i32) -> i32
+    clock_time_get: (id, precision, out) => 52,
+    // (fd: i32) -> i32
+    fd_close: (fd) => 0,
+    // (fd: i32, offset: i64, whence: i32, out: i32) -> i32
+    fd_seek: (fd, offset, whence, out) => 70,   // ESPIPE
+    // (fd: i32, iovs: i32, iovs_len: i32, out: i32) -> i32
+    fd_write: (fd, iovs, len, out) => 52,       // ENOSYS
+  };
+  const imports = {
+    wasi_snapshot_preview1: wasi_snapshot_preview1,
+  };
+  const { compileStreaming } = await import('./wasm/main.mjs');
+  const app = await (await compileStreaming(fetch('./wasm/main.wasm'))).instantiate({});
+  await app.invokeMain(); // runs Dart main(): assigns globalThis.dartMain
+  const { instance } = await WebAssembly.instantiateStreaming(fetch('./demo/demo.wasm'), imports);
+  dartMain(instance.exports);
+</script>

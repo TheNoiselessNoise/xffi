@@ -1,0 +1,1 @@
+int get INT_64_MAX => 0x7FFFFFFFFFFFFFFF;

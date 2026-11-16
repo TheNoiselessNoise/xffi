@@ -1,0 +1,1 @@
+int get INT_64_MAX => throw UnsupportedError('No platform implementation available for: INT_64_MAX');
