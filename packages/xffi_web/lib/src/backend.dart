@@ -29,10 +29,19 @@ XWasmPtr<X> _wasmCalloc<X extends XType>(int nmemb, int size)
 
 class XWebVanillaCoreLib with WasmBindings {
   late final XF4<int> vsnprintf;
+  late final XF2<void> vprintf;
 
   XWebVanillaCoreLib() {
     vsnprintf = dwrap4('vsnprintf');
+    vprintf = dwrap2('vprintf');
   }
+}
+
+/// Base class for WASM-backed modules.
+///
+/// Arity and (sort of) type-checked `wrap` bindings.
+abstract class XPackageModuleWasm<X extends XPackage> extends XPackageModule<X> with WasmBindings {
+  XPackageModuleWasm(super.rl);
 }
 
 void bootMemoryBackend(WasmCompatibilityLayer layer) {
@@ -58,5 +67,6 @@ void bootMemoryBackend(WasmCompatibilityLayer layer) {
   WasmMemory.swrap = layer.swrap;
   WasmMemory.symbol = layer.symbol;
   final coreLib = XWebVanillaCoreLib();
-  XUtils.vsnprintf = (str, size, format, ap) => coreLib.vsnprintf(str.toJS, size.toJS, format.toJS, ap.toJS);
+  XPrint.vsnprintf = (str, size, format, ap) => coreLib.vsnprintf(str.toJS, size.toJS, format.toJS, ap.toJS);
+  XPrint.vprintf = (format, [ap]) => coreLib.vprintf(format.toJS, (ap ?? XPtr.nullptr()).toJS);
 }

@@ -79,44 +79,7 @@ final class XScalarAlloc<X, Y extends XType> extends XArrayAlloc<X, Y> {
   /// Use this instead of [Ref4] when the C API uses a null pointer to signal "no value".
   XPtr<Y> RefOrNull4(X? o) => o == null ? .nullptr() : Ref4(o);
 
-  /// Fixed scratch slot holding a zero-initialized value.
-  ///
-  /// This is effectively the native-memory equivalent of a Dart-layer
-  /// `.zero()` constructor (e.g. `Vector2.zero()`), a cheap, shared,
-  /// always-zero buffer for call sites that just need to pass a zero value
-  /// without allocating.
-  ///
-  /// **Read-only by convention.** Because this slot is shared (via [At])
-  /// across every call site that touches [$zeroPtr], writing through it
-  /// permanently corrupts the "zero" invariant for everyone else using it,
-  /// there is no reset. Never write through this pointer; only read from it
-  /// or pass it where the callee treats it as `const`. If you need a
-  /// mutable zero-initialized buffer, use [$newPtr] (or write zero into
-  /// [$1Ptr]..[$4Ptr] yourself) instead.
-  XPtr<Y> get $zeroPtr => At('@reusableZero');
-
-  /// Reusable single-element scratch slot, mutable (unlike [$zeroPtr]).
-  XPtr<Y> get $1Ptr => At('@reusable1');
-  
-  /// Reusable single-element scratch slot, mutable (unlike [$zeroPtr]).
-  ///
-  /// Use when a call needs a second independent scratch pointer alongside
-  /// [$1Ptr] (e.g. writing two out-parameters in the same FFI call).
-  XPtr<Y> get $2Ptr => At('@reusable2');
-  
-  /// Reusable single-element scratch slot, mutable (unlike [$zeroPtr]).
-  ///
-  /// Use when a call needs a third independent scratch pointer alongside
-  /// [$2Ptr] (e.g. writing two out-parameters in the same FFI call).
-  XPtr<Y> get $3Ptr => At('@reusable3');
-  
-  /// Reusable single-element scratch slot, mutable (unlike [$zeroPtr]).
-  ///
-  /// Use when a call needs a fourth independent scratch pointer alongside
-  /// [$3Ptr] (e.g. writing two out-parameters in the same FFI call).
-  XPtr<Y> get $4Ptr => At('@reusable4');
-  
-  /// Fresh, independently-owned scratch pointer, unlike [$zeroPtr]..[$4Ptr].
+  /// Fresh, independently-owned scratch pointer.
   ///
   /// Each access gets its own slot via [XAlloc.AtUnique], keyed with a monotonic id,
   /// so it is safe even when the same call site may be active multiple times

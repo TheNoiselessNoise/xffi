@@ -336,12 +336,12 @@ final class XVaList {
     }
 
     try {
-      final len = XUtils.vsnprintf(XPtr.nullptr(), 0, fmt, fresh());
+      final len = XPrint.vsnprintf(XPtr.nullptr(), 0, fmt, fresh());
       if (len < 0) return fmt.toDartString();
 
       final buf = XPtr.calloc<XUint8>(1, len + 1);
       try {
-        XUtils.vsnprintf(buf, len + 1, fmt, fresh());
+        XPrint.vsnprintf(buf, len + 1, fmt, fresh());
         return buf.cast<XChar>().toDartString(len);
       } finally {
         buf.free();

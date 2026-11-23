@@ -32,6 +32,30 @@ XNativePtr<X> _nativeMalloc<X extends XType>(int size)
 XNativePtr<X> _nativeCalloc<X extends XType>(int nmemb, int size)
   => .new(ffi.calloc.allocate(nmemb * size));
 
+typedef XLibraryLookup = Pointer<T> Function<T extends NativeType>(String symbolName);
+
+final class XExternalLibs {
+  XExternalLibs._();
+
+  static final Map<Type, DynamicLibrary> _libs = {};
+
+  static void register<T extends XPackageModule>(String path) {
+    if (_libs.containsKey(T)) {
+      throw StateError("A dynamic library for $T is already registered.");
+    }
+
+    _libs[T] = .open(path);
+  }
+
+  static XLibraryLookup lookup<T extends XPackageModule>() {
+    final lib = _libs[T];
+    if (lib == null) {
+      throw StateError("No dynamic library registered for $T.");
+    }
+    return lib.lookup;
+  }
+}
+
 void bootMemoryBackend() {
   xffi_core.bootMemoryBackend();
   XType.nativeWordSize = sizeOf<IntPtr>();
@@ -48,5 +72,12 @@ void bootMemoryBackend() {
     int Function(Pointer<Uint8>, int, Pointer<ffi.Utf8>, Pointer<Void>)
   >('vsnprintf');
 
-  XUtils.vsnprintf = (str, size, format, ap) => vsnprintf(str.asNative(), size, format.asNative(), ap.asNative());
+  XPrint.vsnprintf = (str, size, format, ap) => vsnprintf(str.asNative(), size, format.asNative(), ap.asNative());
+
+  final vprintf = DynamicLibrary.process().lookupFunction<
+    Void Function(Pointer<ffi.Utf8>, Pointer<Void>),
+    void Function(Pointer<ffi.Utf8>, Pointer<Void>)
+  >('vprintf');
+
+  XPrint.vprintf = (format, [ap]) => vprintf(format.asNative(), ap?.asNative() ?? nullptr);
 }

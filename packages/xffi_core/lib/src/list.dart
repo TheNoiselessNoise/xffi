@@ -17,6 +17,10 @@ abstract final class _Access<E> {
   void writeAt(XPtr base, int index, E value);
 }
 
+mixin _PtrAccess {
+  XPtrCodec get ptrCodec;
+}
+
 /// General-purpose escape hatch.
 final class _ClosureAccess<E> implements _Access<E> {
   final E? Function(XPtr fieldPtr, int index) _read;
@@ -49,9 +53,12 @@ final class _InlineArrayAccess<E, X extends XType> implements _Access<E> {
 /// Pointer to a variable-length array: `X* xs;`.
 /// `base` handed to [readAt]/[writeAt] is the address of the pointer *slot*
 /// (not yet dereferenced), [XPtrCodec.elementPtr] derefs it for you.
-final class _PointerArrayAccess<E, X extends XType> implements _Access<E> {
+final class _PointerArrayAccess<E, X extends XType> with _PtrAccess implements _Access<E> {
   final XPtrCodec<E, X> codec;
+
   const _PointerArrayAccess(this.codec);
+
+  @override XPtrCodec get ptrCodec => codec;
 
   @override
   E? readAt(XPtr base, int index) {
@@ -67,11 +74,13 @@ final class _PointerArrayAccess<E, X extends XType> implements _Access<E> {
 /// to a single inline array, the pointer doesn't move per element, only
 /// the offset within what it points to does.
 /// `base` handed to [readAt]/[writeAt] is the address of the pointer slot.
-final class _PointerToFixedArrayAccess<E, X extends XType> implements _Access<E> {
+final class _PointerToFixedArrayAccess<E, X extends XType> with _PtrAccess implements _Access<E> {
   final XPtrCodec<List<E>, XArray<X>> pointerCodec;
   late final XArrayCodec<E, X> arrayCodec = pointerCodec.inner as XArrayCodec<E, X>;
 
   _PointerToFixedArrayAccess(this.pointerCodec);
+
+  @override XPtrCodec get ptrCodec => pointerCodec;
 
   @override
   E? readAt(XPtr base, int index) {
@@ -279,11 +288,31 @@ final class XLiveList<E, X extends XType> extends ListMixin<E> {
   List<E> get inner => _cache.cast();
 
   /// Replaces the cached representation and writes it into native memory.
-  set inner(List<E> value) {
+  set innerWrite(List<E> value) {
     if (_fixedCount != null) assert(value.length <= _fixedCount);
     _cache = .of(value);
     final fp = _fieldPtr();
     if (fp == null) return;
+    for (var i = 0; i < value.length; i++) _access.writeAt(fp, i, value[i]);
+  }
+
+  // set inner(List<E> value) => _setOrAllocate(value);
+
+  void setOrAllocate(List<E> value, {String? key, int? length, bool raw = false}) {
+    if (_fixedCount != null) assert(value.length <= _fixedCount);
+    _cache = .of(value);
+    final fp = _fieldPtr();
+    if (fp == null) return;
+
+    if (_access case _PtrAccess a) {
+      final inner = fp.readPtr();
+      if (inner.isNull) {
+        final count = length ?? value.length;
+        final ptrKey = '${key ?? 'inner'}:${XTemp.instance.nextId()}';
+        a.ptrCodec.allocate(fp, ptrKey, count: count, raw: raw);
+      }
+    }
+
     for (var i = 0; i < value.length; i++) _access.writeAt(fp, i, value[i]);
   }
 
@@ -340,7 +369,7 @@ extension StructLiveListNested<E, X extends XType> on XLiveList<List<E>, XPtrTyp
     for (var i = 0; i < value.length; i++) {
       if (i >= _cache.length) this[i]; // lazily create the inner live list
       final inner = _cache[i];
-      if (inner case XLiveList inner) inner.inner = value[i];
+      if (inner case XLiveList inner) inner.setOrAllocate(value[i]);
     }
     if (_cache.length > value.length) _cache.length = value.length;
   }

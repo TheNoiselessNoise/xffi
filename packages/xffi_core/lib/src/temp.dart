@@ -116,10 +116,10 @@ final class XTemp {
 
   XStructAlloc structAllocUntyped(Object type) {
     if (type is XStructDef<XDynStruct>) {
-      return _structAllocators[type.baseType] ??= type.allocator;
+      return _structAllocators[type.baseType] ??= type._allocator;
     }
     final st = XStructDefinitions.ofUntyped(type);
-    return _structAllocators[st.baseType] ??= st.allocator;
+    return _structAllocators[st.baseType] ??= st._allocator;
   }
 
   XStructAlloc<X> structAlloc<X extends XStruct<X>>()

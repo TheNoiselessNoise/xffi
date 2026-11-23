@@ -150,7 +150,7 @@ extension JSAnyConversion on JSAny? {
   bool get isDefined => !isUndefinedOrNull;
 }
 
-extension JSFunctionUtilExtension on JSFunction {
+extension XJSFunctionUtilExtension on JSFunction {
   @JS('apply')
   external JSAny? _applyFn(JSAny? thisArg, JSArray<JSAny?> args);
 

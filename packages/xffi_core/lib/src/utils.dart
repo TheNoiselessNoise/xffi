@@ -1,28 +1,65 @@
 part of '../xffi_core.dart';
 
-/// Dart-side utility helpers.
-final class XUtils {
-  XUtils._();
+/// Shortcuts for binary and octal representation of an `int`.
+extension RadixLiterals on int {
+  int get b => .parse(toString(), radix: 2);
+  int get o => .parse(toString(), radix: 8);
+}
 
-  // Injectable
-
-  static int _vsnprintf(XPtr<XUint8> str, int size, XPtr<XChar> format, XPtr<XVoid> ap)
-    => throw StateError('XUtils.vsnprintf not initialized by backend');
-
-  static int Function(XPtr<XUint8> str, int size, XPtr<XChar> format, XPtr<XVoid> ap) vsnprintf = _vsnprintf;
-
-  // Other
+/// Dart-side utility helpers for Enums.
+final class XEnumUtils {
+  XEnumUtils._();
 
   /// Combines multiple [XEnum] values into a single bitmask via bitwise OR.
-  static int EnumsAsFlagsOr(Iterable<XEnum> values)
+  static int FlagsOr(Iterable<XEnum> values)
     => values.fold(0, (acc, e) => acc | e.value);
 
-  // Format
+  /// Formats [flags] as a `|`-separated string of enum names, mirroring C bitflag notation.
+  static String StringFlagsOr(Iterable<XEnum> flags) => flags.map((e) => e.name).join(' | ');
+
+  /// Combines multiple [XEnum] values into a single bitmask via bitwise OR.
+  static int FlagsAnd(Iterable<XEnum> values)
+    => values.fold(0, (acc, e) => acc & e.value);
+
+  /// Formats [flags] as a `&`-separated string of enum names, mirroring C bitflag notation.
+  static String StringFlagsAnd(Iterable<XEnum> flags) => flags.map((e) => e.name).join(' & ');
+}
+
+/// Dart-side utility helpers for printf-like format.
+final class XPrint {
+  XPrint._();
 
   static final _fmtSpecifier = RegExp(r'%(?!%)([-+ #0]*)(\d+|\*)?(?:\.(\d+|\*))?[hlLqjzt]*([diouxXeEfFgGaAcspn])');
 
   /// Checks if [s] contains any `printf format specifiers`.
-  static bool HasFormatSpecifier(String s) => _fmtSpecifier.hasMatch(s);
+  static bool HasSpecifier(String s) => _fmtSpecifier.hasMatch(s);
+
+  // Injectable
+
+  static int _vsnprintf(XPtr<XUint8> str, int size, XPtr<XChar> format, XPtr<XVoid> ap)
+    => throw StateError('XPrint.vsnprintf not initialized by backend');
+
+  /// Writes formatted output to [str] using the format string [format] and
+  /// the variable arguments provided by [ap].
+  ///
+  /// Writes at most [size] bytes, including the terminating null byte.
+  /// Returns the number of characters that would have been written if
+  /// [size] had been sufficiently large, excluding the terminating null byte.
+  static int Function(XPtr<XUint8> str, int size, XPtr<XChar> format, XPtr<XVoid> ap) vsnprintf = _vsnprintf;
+
+  static void _vprintf(XPtr<XChar> format, [XPtr<XVoid>? ap])
+    => throw StateError('XPrint.vprintf not initialized by backend');
+
+  /// Writes formatted output to the standard output using [format] and
+  /// the variable arguments provided by [ap].
+  ///
+  /// Unlike [printf], this function accepts a preconstructed [va_list]
+  /// instead of individual variadic arguments.
+  ///
+  /// If [ap] is omitted, the function is called without a valid argument
+  /// list. This is only appropriate when [format] does not require any
+  /// arguments.
+  static void Function(XPtr<XChar> format, [XPtr<XVoid>? ap]) vprintf = _vprintf;
 
   /// Formats [fmt] printf-style, consuming positional arguments from [args].
   ///
@@ -42,9 +79,6 @@ final class XUtils {
   ///   32-bit unsigned quantity represented as a negative 32-bit signed int,
   ///   this will print the wrong magnitude, length modifiers are currently
   ///   ignored, so there's no way to request `toUnsigned(32)` instead.
-  /// - `NaN`/`Infinity` are not special-cased: `toStringAsFixed` and
-  ///   `toStringAsExponential` throw on non-finite doubles, so passing one
-  ///   to `%e/%f/%g` will throw rather than print `nan`/`inf`.
   static String Format(String fmt, [List<Object?> args = const []]) {
     var argIdx = 0;
     Object? nextArg() {
@@ -160,15 +194,20 @@ final class XUtils {
 
   static String _formatFloat(double v, String conv, int? precision, bool plus, bool space) {
     final p = precision ?? 6;
-    var body = switch (conv) {
+    var body = v.isFinite ? switch (conv) {
       'e' || 'E' => v.toStringAsExponential(p),
       'g' || 'G' => v.toStringAsPrecision(p == 0 ? 1 : p),
       _ => v.toStringAsFixed(p),
-    };
+    } : (v.isNaN ? 'nan' : 'inf');
     if (conv == 'E' || conv == 'G') body = body.toUpperCase();
     if (v >= 0) body = plus ? '+$body' : (space ? ' $body' : body);
     return body;
   }
+}
+
+/// Dart-side utility helpers.
+final class XUtils {
+  XUtils._();
 
   /// Splits on `_`, `-`, ` ` and camel/Pascal-case boundaries.
   static List<String> TextSplitWords(String text) {
@@ -315,19 +354,19 @@ final class XUtils {
 
   /// Reverses the byte order of a 32-bit value.
   static int swap32(int v) =>
-    ((v & 0xFF) << 24) |
-    ((v & 0xFF00) << 8) |
-    ((v >> 8) & 0xFF00) |
-    ((v >> 24) & 0xFF);
+    ((v &   0xFF) << 24) |
+    ((v & 0xFF00) <<  8) |
+    ((v >>  8) & 0xFF00) |
+    ((v >> 24) &   0xFF);
 
   /// Reverses the byte order of a 64-bit value.
   static int swap64(int v) =>
-    ((v & 0xFF) << 56) |
-    ((v & 0xFF00) << 40) |
-    ((v & 0xFF0000) << 24) |
-    ((v & 0xFF000000) << 8) |
-    ((v >> 8) & 0xFF000000) |
-    ((v >> 24) & 0xFF0000) |
-    ((v >> 40) & 0xFF00) |
-    ((v >> 56) & 0xFF);
+    ((v &       0xFF) << 56) |
+    ((v &     0xFF00) << 40) |
+    ((v &   0xFF0000) << 24) |
+    ((v & 0xFF000000) <<  8) |
+    ((v >>  8) & 0xFF000000) |
+    ((v >> 24) &   0xFF0000) |
+    ((v >> 40) &     0xFF00) |
+    ((v >> 56) &       0xFF);
 }

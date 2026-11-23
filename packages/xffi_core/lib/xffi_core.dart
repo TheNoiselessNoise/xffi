@@ -27,6 +27,7 @@ part 'src/memory_pointer.dart';
 part 'src/memory_type.dart';
 part 'src/module.dart';
 part 'src/output.dart';
+part 'src/package.dart';
 part 'src/platform.dart';
 part 'src/scalar_types.dart';
 part 'src/scratch.dart';
@@ -37,3 +38,5 @@ part 'src/temp.dart';
 part 'src/trace.dart';
 part 'src/utils.dart';
 part 'src/va_list.dart';
+
+void bootMemoryBackend() => XTemp.instance;

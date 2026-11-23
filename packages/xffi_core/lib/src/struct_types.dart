@@ -13,7 +13,7 @@ final class XStructDef<X extends XStruct<X>> {
   bool get isDynamic => X == XDynStruct;
   Type get baseType => X;
   
-  late final XStructAlloc<X> allocator = .new(this);
+  late final XStructAlloc<X> _allocator = .new(this);
 
   XStructDef._({
     this.isValue = false,
