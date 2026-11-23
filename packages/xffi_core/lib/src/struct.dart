@@ -73,6 +73,47 @@ abstract class XStruct<X extends XStruct<X>> {
     return ptr;
   }
 
+  /// Disposes [struct], invokes [fn] with its underlying pointer, and then frees
+  /// the temporary allocation backing the pointer, if any.
+  ///
+  /// The allocation is freed after [fn] completes, including when [fn] throws.
+  /// This is intended for APIs where the external call does not take ownership
+  /// of the underlying memory.
+  void disposeStructWithOpFreed(void Function(XStructPtr<X> ptr) fn) {
+    final ptr = getOpAndDispose();
+
+    try {
+      fn(ptr);
+    } finally {
+      if (ptr.allocationKey case final key?) {
+        XTemp.instance.structAlloc<X>().Free(key);
+      } else {
+        ptr.free();
+      }
+    }
+  }
+
+  /// Disposes [struct], invokes [fn] with its underlying pointer, and then
+  /// unslots the temporary allocation backing the pointer, if any.
+  ///
+  /// The allocation is removed from the temporary allocator without freeing its
+  /// underlying memory. This is intended for APIs where the external call takes
+  /// responsibility for freeing the memory.
+  ///
+  /// The allocation is unslotted after [fn] completes, including when [fn]
+  /// throws.
+  void disposeStructWithOpUnslotted(void Function(XStructPtr<X> ptr) fn) {
+    final ptr = getOpAndDispose();
+
+    try {
+      fn(ptr);
+    } finally {
+      if (ptr.allocationKey case final key?) {
+        XTemp.instance.structAlloc<X>().Unslot(key);
+      }
+    }
+  }
+
   /// [XStructDef] for this given struct.
   XStructDef<X> get structType => XStructDefinitions.of<X>();
 

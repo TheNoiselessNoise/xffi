@@ -1,6 +1,6 @@
 part of '../xffi_core.dart';
 
-/// Backend-agnostic handle to a raw memory buffer returned by a C function.
+/// Backend-agnostic handle to a raw memory buffer.
 abstract class XPtr<X extends XType> {
 
   XPtr get _base => this;
@@ -25,16 +25,14 @@ abstract class XPtr<X extends XType> {
   /// Creates a new [XPtr] from a given address.
   static XPtr<Y> Function<Y extends XType>(int address) fromAddress = _defaultFromAddress;
 
-  static XPtr<XVoid> _defaultFromBytes(TypedData data) {
-    throw StateError(
-      'XPtr.fromBytes called before a memory backend was initialized.'
-    );
-  }
-
   /// Allocates a new pointer and writes [data] into it.
   /// 
   /// Caller owns the result and must free() it.
-  static XPtr<XVoid> Function(TypedData data) fromBytes = _defaultFromBytes;
+  static XPtr<XVoid> Function(TypedData data) fromBytes = (data) {
+    throw StateError(
+      'XPtr.fromBytes called before a memory backend was initialized.'
+    );
+  };
 
   /// Allocates a new NUL-terminated UTF-8 C string from [text] and
   /// returns a pointer to it.

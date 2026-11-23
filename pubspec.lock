@@ -407,7 +407,7 @@ packages:
       path: "../raylib_dartified/packages/raylib_dartified_base"
       relative: true
     source: path
-    version: "6.0.4"
+    version: "6.0.5"
   record_use:
     dependency: transitive
     description:

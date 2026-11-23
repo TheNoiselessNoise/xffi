@@ -208,20 +208,20 @@ final class XLiveList<E, X extends XType> extends ListMixin<E> {
   /// The outer list represents the array of `T*` pointers; every element
   /// is itself a live list over the `T[]` that particular `T*` points to,
   /// built lazily and cached in [nestedCache] as indices are accessed.
-  static XLiveList<XLiveList<T, RInner>, XPtrType<RInner>> ptrPtrArray<
+  static XLiveList<XLiveList<T, Inner>, XPtrType<Inner>> ptrPtrArray<
     T,
-    RInner extends XType
+    Inner extends XType
   >(
     XPtr? Function() ptrOf,
-    XPtrArrayField<T, XPtrType<RInner>> field,
+    XPtrArrayField<T, XPtrType<Inner>> field,
     List<List<T>> initial,
   ) {
     final outerCodec = field.codec;
-    final innerCodec = outerCodec.inner as XPtrCodec<T, RInner>;
-    final innerAccess = _ResolvedPointerAccess<T, RInner>(innerCodec);
-    final nestedCache = <XLiveList<T, RInner>>[];
+    final innerCodec = outerCodec.inner as XPtrCodec<T, Inner>;
+    final innerAccess = _ResolvedPointerAccess<T, Inner>(innerCodec);
+    final nestedCache = <XLiveList<T, Inner>>[];
 
-    XLiveList<T, RInner> build(int index) {
+    XLiveList<T, Inner> build(int index) {
       while (nestedCache.length <= index) {
         final i = nestedCache.length;
         final initialInner = i < initial.length ? initial[i] : const <Never>[];
@@ -244,7 +244,7 @@ final class XLiveList<E, X extends XType> extends ListMixin<E> {
       return nestedCache[index];
     }
 
-    return ._(ptrOf, field.offset, null, _LazyBuiltAccess<XLiveList<T, RInner>>(build), nestedCache);
+    return ._(ptrOf, field.offset, null, _LazyBuiltAccess<XLiveList<T, Inner>>(build), nestedCache);
   }
 
   // we don't care about nullptr
@@ -286,17 +286,6 @@ final class XLiveList<E, X extends XType> extends ListMixin<E> {
 
   /// The current non-live cached representation. Does not force a read.
   List<E> get inner => _cache.cast();
-
-  /// Replaces the cached representation and writes it into native memory.
-  set innerWrite(List<E> value) {
-    if (_fixedCount != null) assert(value.length <= _fixedCount);
-    _cache = .of(value);
-    final fp = _fieldPtr();
-    if (fp == null) return;
-    for (var i = 0; i < value.length; i++) _access.writeAt(fp, i, value[i]);
-  }
-
-  // set inner(List<E> value) => _setOrAllocate(value);
 
   void setOrAllocate(List<E> value, {String? key, int? length, bool raw = false}) {
     if (_fixedCount != null) assert(value.length <= _fixedCount);
@@ -360,7 +349,6 @@ typedef StructLiveListStruct<E extends XStruct<E>> = XLiveList<E, XStructType>;
 
 typedef StructLiveListStructNested<E extends XStruct<E>> = XLiveList<XLiveList<E, XStructType>, XPtrType<XStructType>>;
 
-// NOTE: need to test this, feels wrong
 extension StructLiveListNested<E, X extends XType> on XLiveList<List<E>, XPtrType<X>> {
   List<List<E>> get innerNested => _cache.cast();
 

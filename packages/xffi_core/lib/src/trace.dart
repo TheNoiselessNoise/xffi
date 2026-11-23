@@ -67,4 +67,28 @@ final class XTrace {
   /// Unregisters any write watchers on [address].
   static void unregisterWrite(int address)
     => _writeWatch.remove(address);
+
+  /// Executes [fn], logs its elapsed time under [label], and rethrows any exception
+  /// with timing info attached.
+  static T timeIt<T>(String label, T Function() fn) {
+    final sw = Stopwatch()..start();
+    try {
+      final result = fn();
+      sw.stop();
+      XOutput.logInfo('$label: ${sw.elapsedMilliseconds}ms');
+      return result;
+    } catch (e) {
+      sw.stop();
+      XOutput.logError(label);
+      XOutput.logError('THREW after ${sw.elapsedMilliseconds}ms : $e');
+      rethrow;
+    }
+  }
+
+  /// Prints the current stack trace for debugging.
+  static void stackTrace({String? title, bool exit = false}) {
+    if (title != null) XOutput.logInfo(title);
+    XOutput.logInfo(StackTrace.current);
+    if (exit) throw '';
+  }
 }

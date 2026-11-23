@@ -1,4 +1,5 @@
 import 'dart:js_interop';
+import 'dart:js_interop_unsafe';
 import 'dart:typed_data';
 import 'package:xffi_web_vanilla/xffi_web_vanilla.dart';
 
@@ -57,6 +58,12 @@ final class DemoModule with WasmBindings {
     wrap_single = dwrap1('wrap_single');
     call_vecfn = swrap2('call_vecfn');
   }
+}
+
+extension on WasmCompatibilityLayer {
+  void dummyLog(Object? message) => globalContext
+    .getProperty<JSObject>('document'.toJS)
+    .callMethod<JSAny?>('write'.toJS, '${message ?? 'null'}<br>'.toJS);
 }
 
 void basicTests() {

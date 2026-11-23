@@ -88,7 +88,6 @@ final class _XWebEmscriptenCompatLayer extends WasmCompatibilityLayer {
   @override
   JSFunction<Function> wrap(String name, int arity)
     => dwrap(name, _nAll.sublist(0, arity), _n);
-
   
   @override
   JSFunction<Function> swrap(String name, int arity)

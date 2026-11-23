@@ -39,12 +39,15 @@ final class XExternalLibs {
 
   static final Map<Type, DynamicLibrary> _libs = {};
 
-  static void register<T extends XPackageModule>(String path) {
+  static DynamicLibrary register<T extends XPackageModule>(XLibrarySource source) {
     if (_libs.containsKey(T)) {
       throw StateError("A dynamic library for $T is already registered.");
     }
 
-    _libs[T] = .open(path);
+    return switch (source) {
+      XLibrarySourcePath src => _libs[T] = .open(src.path),
+      XLibrarySourceAsset src => _libs[T] = .codeAsset(src.assetId),
+    };
   }
 
   static XLibraryLookup lookup<T extends XPackageModule>() {

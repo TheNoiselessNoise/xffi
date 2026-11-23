@@ -14,15 +14,6 @@ abstract class WasmCompatibilityLayer {
   JSFunction wrap(String name, int arity);
   JSFunction swrap(String name, int arity);
   JSFunction dwrap(String name, [List<String> argTypes = const [], String? returnType]);
-
-  void dummyLog(Object? message)
-    => globalContext
-      .getProperty<JSObject>('document'.toJS)
-      .callMethod<JSAny?>('write'.toJS, '${message ?? 'null'}<br>'.toJS);
-  
-  XWasmPtr<X> symbol<X extends XType>(String name)
-    => .new(getAddress(name));
-  
-  void print(List<Object?> values)
-    => core.print(values.map((o) => o.toString()).join(' ').toJS);
+  XWasmPtr<X> symbol<X extends XType>(String name) => .new(getAddress(name));
+  void print(List<Object?> values) => core.print(values.map((o) => o.toString()).join(' ').toJS);
 }

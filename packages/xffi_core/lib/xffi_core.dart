@@ -22,6 +22,7 @@ part 'src/config.dart';
 part 'src/debug.dart';
 part 'src/enum.dart';
 part 'src/fields.dart';
+part 'src/library.dart';
 part 'src/list.dart';
 part 'src/memory_pointer.dart';
 part 'src/memory_type.dart';

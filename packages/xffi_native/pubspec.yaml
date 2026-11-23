@@ -1,6 +1,6 @@
 name: xffi_native
 description: Native implementation of xffi's XPtr using Dart FFI.
-version: 1.0.0
+version: 1.0.1
 repository: https://github.com/TheNoiselessNoise/xffi
 
 environment:
@@ -10,4 +10,4 @@ resolution: workspace
 
 dependencies:
   ffi: ^2.2.0
-  xffi_core: ^1.0.0
+  xffi_core: ^1.0.2

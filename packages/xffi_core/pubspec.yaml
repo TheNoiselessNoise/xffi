@@ -1,6 +1,6 @@
 name: xffi_core
 description: Core abstractions, data structures and memory management primitives.
-version: 1.0.1
+version: 1.0.2
 repository: https://github.com/TheNoiselessNoise/xffi
 
 environment:
