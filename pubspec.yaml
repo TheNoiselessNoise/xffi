@@ -17,5 +17,5 @@ dev_dependencies:
   xffi_web_emscripten: any
 
 dependency_overrides:
-  raylib_dartified_base:
-    path: ../raylib_dartified/packages/raylib_dartified_base
+  raylib_dartified:
+    path: ../raylib_dartified/packages/raylib_dartified

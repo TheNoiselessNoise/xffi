@@ -404,7 +404,7 @@ final class MyC2DartWriter extends C2DartWriter {
     writeln('// GENERATED FILE - do not edit by hand.');
     writeln('// ignore_for_file: non_constant_identifier_names');
     writeln();
-    writeln("import 'package:raylib_dartified_base/raylib_dartified_base.dart';");
+    writeln("import 'package:raylib_dartified/raylib_dartified.dart';");
     writeln();
   }
 

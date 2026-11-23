@@ -15,4 +15,4 @@ dependencies:
   xffi_core:
     path: ../xffi_core
   logging: ^1.3.0
-  raylib_dartified_base: ^6.0.4
+  raylib_dartified: ^6.0.5

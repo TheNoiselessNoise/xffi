@@ -401,10 +401,10 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.2"
-  raylib_dartified_base:
+  raylib_dartified:
     dependency: "direct overridden"
     description:
-      path: "../raylib_dartified/packages/raylib_dartified_base"
+      path: "../raylib_dartified/packages/raylib_dartified"
       relative: true
     source: path
     version: "6.0.5"
